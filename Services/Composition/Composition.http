@@ -1,0 +1,15 @@
+@Composition_HostAddress = http://localhost:5249
+
+POST {{Composition_HostAddress}}/api/register
+Accept: application/json
+Content-Type: application/json
+
+{
+  "username": "test@example.com",
+  "password": "SecurePassword123"
+}
+
+###
+
+POST {{Composition_HostAddress}}/api/register
+Accept: application/json
