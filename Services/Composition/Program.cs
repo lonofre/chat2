@@ -21,7 +21,7 @@ public class Program
             options.AddPolicy(name: myAllowSpecificOrigins,
                 policy =>
                 {
-                    policy.WithOrigins("http://localhost:5173")
+                    policy.WithOrigins(builder.Configuration["Cors:AllowedOrigins"]!.Split(','))
                         .AllowAnyHeader()
                         .AllowAnyMethod();
                 });
@@ -44,6 +44,12 @@ public class Program
             });
         builder.Services.AddAuthorization();
 
+        builder.Services.AddSingleton(sp =>
+        {
+            var url = builder.Configuration["Services:Users"]!;
+            return new AuthService.AuthServiceClient(GrpcChannel.ForAddress(url));
+        });
+
         var app = builder.Build();
 
         app.UseCors(myAllowSpecificOrigins);
@@ -54,16 +60,13 @@ public class Program
         app.UseAuthentication();
         app.UseAuthorization();
 
-        using var usersChannel = GrpcChannel.ForAddress("http://localhost:5001");
-        var authClient = new AuthService.AuthServiceClient(usersChannel);
-
-        app.MapPost("/api/register", (RegisterData body) =>
+        app.MapPost("/api/register", (AuthService.AuthServiceClient authClient, RegisterData body) =>
         {
             var response = authClient.Register(new RegisterRequest { Username = body.Username, Password = body.Password });
             return response.Success;
         });
 
-        app.MapPost("/api/login", (LoginData body) =>
+        app.MapPost("/api/login", (AuthService.AuthServiceClient authClient, LoginData body) =>
         {
             var response = authClient.Login(new LoginRequest { Username = body.Username, Password = body.Password });
             if (!response.Success)
