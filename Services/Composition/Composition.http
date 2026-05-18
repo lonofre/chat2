@@ -11,5 +11,11 @@ Content-Type: application/json
 
 ###
 
-POST {{Composition_HostAddress}}/api/register
+POST {{Composition_HostAddress}}/api/login
 Accept: application/json
+Content-Type: application/json
+
+{
+  "username": "test@example.com",
+  "password": "SecurePassword123"
+}
